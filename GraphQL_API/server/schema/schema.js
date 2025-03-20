@@ -1,4 +1,4 @@
-const { GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLInt, GraphQLID } = require("graphql");
+const { GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLInt, GraphQLID, GraphQLList } = require("graphql");
 const _ = require("lodash");
 
 // Dummy data
@@ -8,14 +8,16 @@ const tasks = [
     title: "Create your first webpage",
     weight: 1,
     description:
-      "Create your first HTML file 0-index.html with: -Add the doctype on the first line (without any comment) -After the doctype, open and close an html tag. Open your file in your browser (the page should be blank)."
+      "Create your first HTML file 0-index.html with: -Add the doctype on the first line (without any comment) -After the doctype, open and close an html tag. Open your file in your browser (the page should be blank).",
+    projectId: "1"
   },
   {
     id: "2",
     title: "Structure your webpage",
     weight: 1,
     description:
-      "Copy the content of 0-index.html into 1-index.html. Create the head and body sections inside the html tag, create the head and body tags (empty) in this order."
+      "Copy the content of 0-index.html into 1-index.html. Create the head and body sections inside the html tag, create the head and body tags (empty) in this order.",
+    projectId: "1"
   }
 ];
 
@@ -40,23 +42,36 @@ const projects = [
 // Define TaskType
 const TaskType = new GraphQLObjectType({
   name: "Task",
-  fields: {
+  fields: () => ({
     id: { type: GraphQLString },
     title: { type: GraphQLString },
     weight: { type: GraphQLInt },
-    description: { type: GraphQLString }
-  }
+    description: { type: GraphQLString },
+    projectId: { type: GraphQLID },
+    project: {
+      type: ProjectType,
+      resolve(parent, args) {
+        return _.find(projects, { id: parent.projectId });
+      }
+    }
+  })
 });
 
 // Define ProjectType
 const ProjectType = new GraphQLObjectType({
   name: "Project",
-  fields: {
+  fields: () => ({
     id: { type: GraphQLString },
     title: { type: GraphQLString },
     weight: { type: GraphQLInt },
-    description: { type: GraphQLString }
-  }
+    description: { type: GraphQLString },
+    tasks: {
+      type: new GraphQLList(TaskType),
+      resolve(parent, args) {
+        return tasks.filter(task => task.projectId === parent.id); // Find all tasks for project
+      }
+    }
+  })
 });
 
 // Root Query
