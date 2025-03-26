@@ -4,7 +4,8 @@ const {
   GraphQLString,
   GraphQLInt,
   GraphQLID,
-  GraphQLList
+  GraphQLList,
+  GraphQLNonNull
 } = require("graphql");
 const _ = require("lodash");
 
@@ -114,6 +115,41 @@ const RootQuery = new GraphQLObjectType({
   }
 });
 
+// Mutation
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addProject: {
+      type: ProjectType,
+      args: {
+        title: { type: new GraphQLNonNull(GraphQLString) },
+        weight: { type: new GraphQLNonNull(GraphQLInt) },
+        description: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve(parent, args) {
+        // Create a new project to simulate database insertion
+        const newProject = {
+          id: (projects.length + 1).toString(),
+          title: args.title,
+          weight: args.weight,
+          description: args.description
+        };
+        projects.push(newProject);
+        return newProject;
+        // --- When using Mongoose ---
+        // const project = newProject({
+        //   title: args.title,
+        //   weight: args.weight,
+        //   description: args.description
+        // });
+        // return project.save();
+      }
+    }
+    // Additional mutations (like addTask) can be added here
+  }
+});
+
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation: Mutation
 });
