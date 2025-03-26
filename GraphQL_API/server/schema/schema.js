@@ -144,8 +144,28 @@ const Mutation = new GraphQLObjectType({
         // });
         // return project.save();
       }
-    }
+    },
     // Additional mutations (like addTask) can be added here
+    addTask: {
+      type: TaskType,
+      args: {
+        title: { type: new GraphQLNonNull(GraphQLString) },
+        weight: { type: new GraphQLNonNull(GraphQLInt) },
+        description: { type: new GraphQLNonNull(GraphQLString) },
+        projectId: { type: new GraphQLNonNull(GraphQLID) }
+      },
+      resolve(parent, args) {
+        const newTask = {
+          id: (tasks.length + 1).toString(),
+          title: args.title,
+          weight: args.weight,
+          description: args.description,
+          projectId: args.projectId
+        };
+        tasks.push(newTask);
+        return newTask;
+      }
+    }
   }
 });
 
